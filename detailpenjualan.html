@@ -1,0 +1,141 @@
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FISIKAFARMA</title>
+  <meta name="description" content="Free Bootstrap Theme by BootstrapMade.com">
+  <meta name="keywords" content="free website templates, free bootstrap themes, free template, free bootstrap, free website template">
+
+  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans|Raleway|Candal">
+  <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+
+ <div id="app2" class="container">
+    <div v-if="form == true">
+       <h3 style="margin-top: 20px">DETAIL PENJUALAN</h3>
+        <div class="form-group">
+          <label>ID Penjualan</label>
+          <select id="penjualan_id" v-model="selectedpem" class="form-control">
+            <option v-for="item in items" :value="item.penjualan.id">{{item.penjualan.nama_pembeli}}</option>
+           </select>
+       </div>
+        <div class="form-group">
+          <label>Nama Karyawan</label>
+          <select id="karyawan_id" v-model="selectedkar" class="form-control">
+            <option v-for="item in items" :value="item.karyawan.id">{{ item.karyawan.nama_karyawan}}</option>
+           </select>
+       </div>
+       <div class="form-group">
+          <label>Produk</label>
+          <select id="produk_id" v-model="selectedpro" class="form-control">
+            <option v-for="item in items" :value="item.produk.id">{{ item.produk.nama}} - Rp.{{ item.produk.harga}}</option>
+           </select>
+       </div>
+       <div class="form-group">
+         <label>Jumlah</label>
+         <input type="text" id="jumlah" class="form-control">
+       </div>
+        <div class="form-group">
+          <button class="btn btn-default" v-on:click="Simpan()">Simpan</button>
+          <button class="btn btn-danger" v-on:click="form = !form"> Batal </button>
+        </div>
+      </div>
+    <div v-if="form == false">
+      <h3>
+        Menampilkan Detail Penjualan
+      </h3>
+      <button class="btn btn-primary" v-on:click="form = !form">
+        TAMBAH DATA PENJUALAN
+      </button>
+      <br>
+      <table class="table table-bordered">
+        <tr>
+          <th>ID</th>
+          <th>Penjualan ID</th>
+          <th>Nama Produk</th>
+          <th>Nama Karyawan</th>
+          <th>Jumlah</th>
+          <th>Sub Total</th>
+        </tr>
+        <tr v-for="item in items">
+          <td>{{item.id}}</td>
+          <td>{{item.penjualan.nama_pembeli}}</td>
+          <td>{{item.produk.nama}} : Rp.{{item.produk.harga}}</td>
+          <td>{{item.karyawan.nama_karyawan}}</td>
+          <td>{{item.jumlah}}</td>
+          <td>{{item.jumlah * item.produk.harga}}</td>
+        </tr>
+      </table>
+      <a href="index2.html" class="btn btn-primary">HOME</a>
+       <label>TOTAL HARGA : {{ totalItem }}</label>
+    </div>  
+  </div>
+
+  <script src="js/vue.js"></script>
+  <script src="js/axios.min.js"></script>
+  <script>
+    var example2 = new Vue({
+      el: '#app2',
+      data: {
+        items: [],
+        form: false,
+        selectedkar: '',
+        selectedpro: '',
+        selectedpem: ''
+      },
+
+      mounted(){
+        this.fetchDetail();
+      },
+      methods: {
+        fetchDetail() {
+        var self = this;
+        axios.get('http://localhost:8000/api/get-detail')
+        .then(function(response){
+          console.log(response.data);
+          self.items = response.data;
+        })
+        .catch(function(eror) {
+          console.log(eror)
+        })
+      },
+       Simpan() { 
+        var i_penjualanid = document.getElementById("penjualan_id").value
+        var i_produkid = document.getElementById("produk_id").value
+        var i_karyawan = document.getElementById("karyawan_id").value
+        var i_jumlah = document.getElementById("jumlah").value
+
+        var self = this;
+        axios.post('http://localhost:8000/api/post-detail', {
+          penjualan_id: i_penjualanid, 
+          produk_id: i_produkid, 
+          karyawan_id: i_karyawan,
+          jumlah: i_jumlah,
+        })
+        .then(function(response) {
+          console.log(response);
+          if (response.data.status == true) {
+            self.form = !self.form
+            self.fetchDetail()
+          }else{
+            alert("Data Gagal Disimpan")
+          }
+        })
+        .catch(function(error) {
+          console.log(error);
+        })
+
+      }
+    },
+    computed: {
+      totalItem(){
+        let sum = 0;
+        this.items.forEach(function(item) {
+         sum += (parseFloat(item.jumlah) * parseFloat(item.produk.harga));
+       });
+
+        return sum;
+      }
+    }
+  })
+    
+</script>
